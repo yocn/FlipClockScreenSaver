@@ -3,3 +3,4 @@
 #define IDC_TWELVE 1002
 #define IDC_DATE 1003
 #define IDC_DRIFT 1004
+#define IDC_WEEKDAY 1005

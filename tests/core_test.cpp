@@ -1,4 +1,5 @@
 #include "../src/core.h"
+#include "../src/settings.h"
 #include <cmath>
 #include <iostream>
 #include <stdexcept>
@@ -11,6 +12,17 @@ void check(bool ok, const char* label) {
 int main() {
     using namespace flip;
     try {
+        auto legacy=decodeOptions(15);
+        check(!legacy.seconds && legacy.twelve && legacy.date && !legacy.drift && !legacy.weekday, "legacy settings retain meaning");
+        auto weekdayOnly=decodeOptions(16);
+        check(weekdayOnly.weekday && !weekdayOnly.date, "weekday enabled independently of date");
+        check(decodeOptions(20).date && decodeOptions(20).weekday, "date and weekday together");
+        Options selected; selected.date=true; selected.weekday=true;
+        check(encodeOptions(selected)==20, "save both calendar options");
+        selected.weekday=false;
+        check(encodeOptions(selected)==4, "turn off weekday without losing date");
+        selected.date=false; selected.weekday=true;
+        check(encodeOptions(selected)==16, "save weekday without date");
         check(parse(L"").mode == Mode::Configure, "no args opens settings");
         check(parse(L" /S ").mode == Mode::Saver, "uppercase fullscreen");
         check(parse(L"-s").mode == Mode::Saver, "hyphen fullscreen");

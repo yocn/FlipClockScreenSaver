@@ -9,6 +9,8 @@ public static class NativeSmoke {
     [DllImport("user32.dll")] public static extern bool EnumWindows(EnumWindow callback, IntPtr data);
     [DllImport("user32.dll")] public static extern uint GetWindowThreadProcessId(IntPtr h, out uint pid);
     [DllImport("user32.dll")] public static extern bool PostMessage(IntPtr h, uint msg, IntPtr w, IntPtr l);
+    [DllImport("user32.dll")] public static extern IntPtr GetDlgItem(IntPtr h, int id);
+    [DllImport("user32.dll")] public static extern IntPtr SendMessage(IntPtr h, uint msg, IntPtr w, IntPtr l);
 }
 '@
 $binary = (Resolve-Path "$PSScriptRoot/../dist/ClassicFlipClock.scr").Path
@@ -41,6 +43,9 @@ function WindowsFor([Diagnostics.Process] $process, [IntPtr] $parent = [IntPtr]:
     return $handles.ToArray()
 }
 $form = $null
+$settingsPath = 'HKCU:\Software\ClassicFlipClock'
+$hadSettingsKey = Test-Path $settingsPath
+$previousFlags = Get-ItemProperty -LiteralPath $settingsPath -Name Flags -ErrorAction SilentlyContinue
 try {
     foreach ($arguments in @('/p', '/p 0', '/p 12abc', '/unknown')) {
         $p = Launch $arguments
@@ -62,7 +67,24 @@ try {
     Pump 800
     $handles = @(WindowsFor $p)
     if ($p.HasExited -or $handles.Count -lt 1) { throw 'Configuration dialog did not open.' }
-    foreach ($h in $handles) { [void][NativeSmoke]::PostMessage($h, 0x0010, [IntPtr]::Zero, [IntPtr]::Zero) }
+    $dialog = $handles | Where-Object { [NativeSmoke]::GetDlgItem($_, 1005) -ne [IntPtr]::Zero } | Select-Object -First 1
+    if (-not $dialog) { throw 'Day-of-week checkbox is missing.' }
+    foreach ($id in @(1003, 1005)) {
+        [void][NativeSmoke]::SendMessage([NativeSmoke]::GetDlgItem($dialog, $id), 0x00F1, [IntPtr] 1, [IntPtr]::Zero)
+    }
+    [void][NativeSmoke]::PostMessage($dialog, 0x0111, [IntPtr] 1, [IntPtr]::Zero)
+    if (-not $p.WaitForExit(5000)) { throw 'Configuration dialog did not save and close.' }
+    $savedFlags = (Get-ItemProperty -LiteralPath $settingsPath -Name Flags).Flags
+    if (($savedFlags -band 20) -ne 20) { throw 'Date and weekday options were not saved.' }
+    $p = Launch '/c'
+    Pump 800
+    $dialog = @(WindowsFor $p) | Where-Object { [NativeSmoke]::GetDlgItem($_, 1005) -ne [IntPtr]::Zero } | Select-Object -First 1
+    if (-not $dialog) { throw 'Settings did not reopen.' }
+    foreach ($id in @(1003, 1005)) {
+        $checked = [NativeSmoke]::SendMessage([NativeSmoke]::GetDlgItem($dialog, $id), 0x00F0, [IntPtr]::Zero, [IntPtr]::Zero)
+        if ($checked.ToInt64() -ne 1) { throw "Saved checkbox $id did not reload." }
+    }
+    [void][NativeSmoke]::PostMessage($dialog, 0x0010, [IntPtr]::Zero, [IntPtr]::Zero)
     if (-not $p.WaitForExit(5000)) { throw 'Configuration dialog did not close.' }
     $p = Launch '/s'
     Pump 400
@@ -70,8 +92,14 @@ try {
     if ($p.HasExited -or $handles.Count -lt 1) { throw 'Fullscreen did not open.' }
     [void][NativeSmoke]::PostMessage($handles[0], 0x0100, [IntPtr] 27, [IntPtr]::Zero)
     if (-not $p.WaitForExit(5000)) { throw 'Keyboard input did not close fullscreen.' }
-    Write-Host 'Windows smoke checks passed: invalid arguments, embedded preview, parent destruction, settings, fullscreen and keyboard exit.'
+    Write-Host 'Windows smoke checks passed: invalid arguments, embedded preview, parent destruction, date/weekday settings persistence, fullscreen and keyboard exit.'
 } finally {
     if ($form) { $form.Dispose() }
     foreach ($p in $processes) { if (-not $p.HasExited) { $p.Kill(); $p.WaitForExit() }; $p.Dispose() }
+    if ($previousFlags) {
+        Set-ItemProperty -LiteralPath $settingsPath -Name Flags -Value $previousFlags.Flags
+    } elseif (Test-Path $settingsPath) {
+        Remove-ItemProperty -LiteralPath $settingsPath -Name Flags -ErrorAction SilentlyContinue
+        if (-not $hadSettingsKey) { Remove-Item -LiteralPath $settingsPath }
+    }
 }

@@ -5,7 +5,7 @@ STRINGTABLE
 BEGIN
     1 "Classic Flip Clock"
 END
-IDD_SETTINGS DIALOGEX 0, 0, 245, 174
+IDD_SETTINGS DIALOGEX 0, 0, 245, 194
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Classic Flip Clock"
 FONT 9, "Segoe UI"
@@ -14,14 +14,15 @@ BEGIN
     CONTROL "Show seconds", IDC_SECONDS, "Button", BS_AUTOCHECKBOX | WS_TABSTOP, 14, 35, 217, 14
     CONTROL "Use 12-hour time (AM / PM)", IDC_TWELVE, "Button", BS_AUTOCHECKBOX | WS_TABSTOP, 14, 55, 217, 14
     CONTROL "Show date", IDC_DATE, "Button", BS_AUTOCHECKBOX | WS_TABSTOP, 14, 75, 217, 14
-    CONTROL "Gently shift position each minute", IDC_DRIFT, "Button", BS_AUTOCHECKBOX | WS_TABSTOP, 14, 95, 217, 14
-    LTEXT "Idle time and lock-on-resume are managed by Windows.", -1, 14, 117, 217, 23
-    DEFPUSHBUTTON "Save", IDOK, 126, 149, 50, 16
-    PUSHBUTTON "Cancel", IDCANCEL, 181, 149, 50, 16
+    CONTROL "Show day of week", IDC_WEEKDAY, "Button", BS_AUTOCHECKBOX | WS_TABSTOP, 14, 95, 217, 14
+    CONTROL "Gently shift position each minute", IDC_DRIFT, "Button", BS_AUTOCHECKBOX | WS_TABSTOP, 14, 115, 217, 14
+    LTEXT "Idle time and lock-on-resume are managed by Windows.", -1, 14, 137, 217, 23
+    DEFPUSHBUTTON "Save", IDOK, 126, 169, 50, 16
+    PUSHBUTTON "Cancel", IDCANCEL, 181, 169, 50, 16
 END
 1 VERSIONINFO
-FILEVERSION 1,0,0,0
-PRODUCTVERSION 1,0,0,0
+FILEVERSION 1,1,0,0
+PRODUCTVERSION 1,1,0,0
 FILEOS VOS_NT_WINDOWS32
 FILETYPE VFT_APP
 BEGIN
@@ -31,7 +32,7 @@ BEGIN
         BEGIN
             VALUE "FileDescription", "Classic Flip Clock Screensaver\0"
             VALUE "ProductName", "Classic Flip Clock\0"
-            VALUE "FileVersion", "1.0.0\0"
+            VALUE "FileVersion", "1.1.0\0"
             VALUE "OriginalFilename", "ClassicFlipClock.scr\0"
         END
     END

@@ -4,10 +4,9 @@
 #include <gdiplus.h>
 #include <memory>
 #include "core.h"
+#include "settings.h"
 
 namespace flip {
-struct Options { bool seconds=true, twelve=false, date=false, drift=true; };
-
 inline void rounded(Gdiplus::GraphicsPath& path, float x, float y, float w, float h, float r) {
     float d=r*2;
     path.AddArc(x,y,d,d,180,90); path.AddArc(x+w-d,y,d,d,270,90);
@@ -103,7 +102,7 @@ public:
             for(float hx : {x+w*0.018f,x+w*0.962f})
                 g.FillRectangle(&hinge,hx,y+half-h*0.036f,w*0.02f,h*0.072f);
         }
-        if(options.twelve || options.date) {
+        if(options.twelve || options.date || options.weekday) {
             std::wstring label;
             if(options.twelve) label=time.wHour<12?L"AM":L"PM";
             if(options.date) {
@@ -111,6 +110,12 @@ public:
                 GetDateFormatEx(LOCALE_NAME_USER_DEFAULT,DATE_SHORTDATE,&time,nullptr,date,100,nullptr);
                 if(!label.empty()) label+=L"   ";
                 label+=date;
+            }
+            if(options.weekday) {
+                wchar_t weekday[100]{};
+                GetDateFormatEx(LOCALE_NAME_USER_DEFAULT,0,&time,L"dddd",weekday,100,nullptr);
+                if(!label.empty()) label+=L"   ";
+                label+=weekday;
             }
             Font font(L"Segoe UI",std::max(8.0f,l.width*0.055f),FontStyleRegular,UnitPixel);
             SolidBrush muted(Color(255,125,125,128));

@@ -35,7 +35,7 @@ struct Window {
 flip::Options loadOptions() {
     DWORD flags=0,size=sizeof(flags);
     RegGetValueW(HKEY_CURRENT_USER,SettingsKey,L"Flags",RRF_RT_REG_DWORD,nullptr,&flags,&size);
-    return {!(flags&1),bool(flags&2),bool(flags&4),!(flags&8)};
+    return flip::decodeOptions(flags);
 }
 
 INT_PTR CALLBACK settingsProc(HWND dialog,UINT message,WPARAM wp,LPARAM) {
@@ -43,15 +43,19 @@ INT_PTR CALLBACK settingsProc(HWND dialog,UINT message,WPARAM wp,LPARAM) {
         CheckDlgButton(dialog,IDC_SECONDS,options.seconds?BST_CHECKED:BST_UNCHECKED);
         CheckDlgButton(dialog,IDC_TWELVE,options.twelve?BST_CHECKED:BST_UNCHECKED);
         CheckDlgButton(dialog,IDC_DATE,options.date?BST_CHECKED:BST_UNCHECKED);
+        CheckDlgButton(dialog,IDC_WEEKDAY,options.weekday?BST_CHECKED:BST_UNCHECKED);
         CheckDlgButton(dialog,IDC_DRIFT,options.drift?BST_CHECKED:BST_UNCHECKED);
         return TRUE;
     }
     if(message==WM_COMMAND) {
         if(LOWORD(wp)==IDOK) {
-            DWORD flags=(IsDlgButtonChecked(dialog,IDC_SECONDS)==BST_CHECKED?0:1)
-                |(IsDlgButtonChecked(dialog,IDC_TWELVE)==BST_CHECKED?2:0)
-                |(IsDlgButtonChecked(dialog,IDC_DATE)==BST_CHECKED?4:0)
-                |(IsDlgButtonChecked(dialog,IDC_DRIFT)==BST_CHECKED?0:8);
+            flip::Options selected{
+                IsDlgButtonChecked(dialog,IDC_SECONDS)==BST_CHECKED,
+                IsDlgButtonChecked(dialog,IDC_TWELVE)==BST_CHECKED,
+                IsDlgButtonChecked(dialog,IDC_DATE)==BST_CHECKED,
+                IsDlgButtonChecked(dialog,IDC_DRIFT)==BST_CHECKED,
+                IsDlgButtonChecked(dialog,IDC_WEEKDAY)==BST_CHECKED};
+            DWORD flags=flip::encodeOptions(selected);
             HKEY key=nullptr;
             LSTATUS result=RegCreateKeyExW(HKEY_CURRENT_USER,SettingsKey,0,nullptr,0,KEY_SET_VALUE,nullptr,&key,nullptr);
             if(result==ERROR_SUCCESS) {
