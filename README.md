@@ -68,7 +68,8 @@ brew install mingw-w64
 
 - 可移植测试：命令行解析（含无效/溢出 HWND）、午夜/中午、12/24 小时制、屏幕布局和翻页阶段。
 - 浏览器预览：设置、持久化、横屏/竖屏/小尺寸布局。
-- GitHub Actions：在 Windows 上使用 MSVC 编译并运行核心测试，上传屏保包。
+- GitHub Actions：在 Windows 上使用 MSVC 编译并运行核心测试；检查无效参数、嵌入式预览、父窗口销毁、设置窗口和全屏按键消息退出，再上传屏保包。
+- 首次验证：[Windows 构建与运行检查全部通过](https://github.com/yocn/FlipClockScreenSaver/actions/runs/41821647326)。
 - 仍需 Windows 交互式验收：系统屏保预览、混合 DPI 多屏、真实字体/动画、鼠标退出、待机启动、锁屏恢复。浏览器预览和编译成功不能替代这些检查。
 
 ## 文件结构

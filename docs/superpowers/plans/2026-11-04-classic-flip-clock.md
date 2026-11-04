@@ -29,7 +29,7 @@
 - [x] 1. Write and run failing portable C++ tests for argument parsing, clock formatting, responsive layout and flip phases; implement src/core.h; rerun full suite.
 - [x] 2. Implement native renderer and Windows lifecycle/configuration. Cross-compile with warnings enabled, inspect PE architecture/imports. Native runtime acceptance is recorded separately.
 - [x] 3. Create matching browser visual companion; inspect representative landscape/portrait views and animation.
-- [ ] 4. Package .scr, installation helper, Chinese instructions, source/build scripts and checksums. Perform independent review, run all checks, and document remaining Windows manual checks.
+- [x] 4. Package .scr, installation helper, Chinese instructions, source/build scripts and checksums. Perform independent review, run all checks, and document remaining Windows manual checks.
 
 ## Execution record
 User selected the offered “按经典款做” path, authorizing sensible defaults and direct execution. No additional design approval is required. This directory is a new standalone project, not an existing Git branch, so worktree/commit steps do not apply.
@@ -42,3 +42,4 @@ The user subsequently requested Git publication to `git@github.com:yocn/FlipCloc
 - Independent read-only reviewer found no blocker. Its DPI robustness recommendation was implemented with an explicit source/destination pixel rectangle for the final blit.
 - Unsigned distribution, x64-only support and approximate HTML/native appearance are intentional scope choices, described in README.
 - Windows CI includes native build, portable tests and lifecycle smoke checks. Interactive multi-monitor/DPI/input/idle/lock behavior remains a manual acceptance task.
+- Windows CI run [41821647326](https://github.com/yocn/FlipClockScreenSaver/actions/runs/41821647326) passed: MSVC build, 53 portable checks, invalid-argument rejection, embedded preview, parent destruction, configuration open/close, fullscreen and keyboard-message exit. Package artifact uploaded successfully.
