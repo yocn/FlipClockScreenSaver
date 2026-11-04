@@ -1,0 +1,42 @@
+#include <windows.h>
+#include "resource.h"
+1 RT_MANIFEST "app.manifest"
+STRINGTABLE
+BEGIN
+    1 "Classic Flip Clock"
+END
+IDD_SETTINGS DIALOGEX 0, 0, 245, 174
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Classic Flip Clock"
+FONT 9, "Segoe UI"
+BEGIN
+    LTEXT "A quiet, classic flip clock.", -1, 14, 12, 217, 14
+    CONTROL "Show seconds", IDC_SECONDS, "Button", BS_AUTOCHECKBOX | WS_TABSTOP, 14, 35, 217, 14
+    CONTROL "Use 12-hour time (AM / PM)", IDC_TWELVE, "Button", BS_AUTOCHECKBOX | WS_TABSTOP, 14, 55, 217, 14
+    CONTROL "Show date", IDC_DATE, "Button", BS_AUTOCHECKBOX | WS_TABSTOP, 14, 75, 217, 14
+    CONTROL "Gently shift position each minute", IDC_DRIFT, "Button", BS_AUTOCHECKBOX | WS_TABSTOP, 14, 95, 217, 14
+    LTEXT "Idle time and lock-on-resume are managed by Windows.", -1, 14, 117, 217, 23
+    DEFPUSHBUTTON "Save", IDOK, 126, 149, 50, 16
+    PUSHBUTTON "Cancel", IDCANCEL, 181, 149, 50, 16
+END
+1 VERSIONINFO
+FILEVERSION 1,0,0,0
+PRODUCTVERSION 1,0,0,0
+FILEOS VOS_NT_WINDOWS32
+FILETYPE VFT_APP
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904b0"
+        BEGIN
+            VALUE "FileDescription", "Classic Flip Clock Screensaver\0"
+            VALUE "ProductName", "Classic Flip Clock\0"
+            VALUE "FileVersion", "1.0.0\0"
+            VALUE "OriginalFilename", "ClassicFlipClock.scr\0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END

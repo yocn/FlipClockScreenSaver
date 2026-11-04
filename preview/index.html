@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Classic Flip Clock · 效果预览</title>
+<link rel="icon" href="data:,">
+<style>
+:root{color-scheme:dark;font-family:Arial,Helvetica,sans-serif;background:#000;color:#edece8}
+*{box-sizing:border-box}body{margin:0;overflow:hidden}main{height:100dvh;display:grid;place-items:center}
+.clock{display:flex;gap:var(--gap);position:relative;width:max-content}
+.card{position:relative;width:var(--w);height:var(--h);border-radius:calc(var(--w)*.045);perspective:calc(var(--w)*4);isolation:isolate;box-shadow:0 16px 30px #0008}
+.half{position:absolute;width:100%;height:50%;overflow:hidden;backface-visibility:hidden;background:#1c1c1e}
+.half span{position:absolute;inset-inline:0;height:var(--h);display:flex;align-items:center;justify-content:center;font-size:calc(var(--w)*.69);font-weight:700;letter-spacing:-.035em;line-height:1;font-variant-numeric:tabular-nums;transform:translateY(calc(var(--h)*-.014))}
+.top{top:0;border-radius:calc(var(--w)*.045) calc(var(--w)*.045) 0 0;background:linear-gradient(#222224,#1d1d1f);border:1px solid #2e2e30;border-bottom:0}
+.bottom{bottom:0;border-radius:0 0 calc(var(--w)*.045) calc(var(--w)*.045);border:1px solid #2e2e30;border-top:0}
+.bottom span{top:-100%}.leaf-top{transform-origin:center bottom;z-index:3}.leaf-bottom{transform-origin:center top;z-index:4;transform:rotateX(90deg)}
+.flipping .leaf-top{animation:top-flip 280ms ease-in forwards}.flipping .leaf-bottom{animation:bottom-flip 280ms 280ms ease-out forwards}
+@keyframes top-flip{to{transform:rotateX(-90deg);filter:brightness(.55)}}@keyframes bottom-flip{from{filter:brightness(.55)}to{transform:rotateX(0);filter:brightness(1)}}
+.fold{position:absolute;left:1px;right:1px;top:50%;height:max(1px,calc(var(--w)*.007));transform:translateY(-50%);background:#040405;box-shadow:0 max(1px,calc(var(--w)*.005)) 0 #2e2e30;z-index:5}
+.hinge{position:absolute;top:46.4%;height:7.2%;width:2%;background:#09090a;z-index:6;border-radius:2px}.hinge.left{left:1.8%}.hinge.right{right:1.8%}
+.caption{position:absolute;top:112%;width:100%;text-align:center;white-space:nowrap;color:#7d7d80;letter-spacing:.12em;font-size:calc(var(--w)*.055)}
+.toolbar{position:fixed;bottom:26px;left:28px;right:28px;display:flex;align-items:center;justify-content:space-between;opacity:0;transition:opacity .35s;color:#777;font-size:11px;letter-spacing:.12em}
+body.controls .toolbar,.toolbar:focus-within{opacity:1}.brand{line-height:1.8}.brand strong{font-weight:500;color:#aaa;display:block;letter-spacing:.2em}.actions{display:flex;gap:8px}button{font:inherit;color:#aaa;border:1px solid #333;border-radius:7px;background:#141414;padding:10px 14px;cursor:pointer}button:hover{color:white;border-color:#666}button:focus-visible{outline:2px solid #ddd;outline-offset:4px}
+dialog{border:1px solid #333;border-radius:14px;background:#141416;padding:28px;width:min(360px,90vw);color:#dededc;box-shadow:0 25px 90px #000}dialog::backdrop{background:#0009;backdrop-filter:blur(6px)}h1{font-size:20px;margin:0 0 8px}dialog p{font-size:12px;color:#888;line-height:1.7}label{display:flex;align-items:center;justify-content:space-between;font-size:14px;padding:13px 0}input{accent-color:#aaa;width:17px;height:17px}dialog button{width:100%;margin-top:18px}.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+@media(prefers-reduced-motion:reduce){.flipping .leaf-top{animation:none;transform:rotateX(-90deg)}.flipping .leaf-bottom{animation:none;transform:none}}
+</style>
+</head>
+<body class="controls">
+<main aria-label="翻页时钟"><div class="clock" role="img" aria-label="当前时间"></div></main>
+<footer class="toolbar"><div class="brand"><strong>CLASSIC FLIP CLOCK</strong>Windows 屏保 · 浏览器效果预览</div><div class="actions"><button id="fullscreen">全屏</button><button id="settings">设置</button></div></footer>
+<dialog><form method="dialog"><h1>Classic Flip Clock</h1><p>保留时间，留白给生活。</p><label>显示秒数<input type="checkbox" id="seconds" checked></label><label>12 小时制<input type="checkbox" id="twelve"></label><label>显示日期<input type="checkbox" id="date"></label><button>完成</button><p>此页面仅预览视觉效果。自动待机启动请安装 Windows 版 .scr 屏保。</p></form></dialog>
+<script>
+const clock=document.querySelector('.clock'),dialog=document.querySelector('dialog');
+let options={seconds:true,twelve:false,date:false};
+try{options={...options,...JSON.parse(localStorage.getItem('classic-flip-options')||'{}')}}catch{}
+let cards=[],previous=[],timers=[],hideTimer;
+function dimensions(){const n=options.seconds?3:2,w=Math.min(innerWidth*.84/(n+(n-1)*.12),innerHeight*.58/1.08);clock.style.setProperty('--w',w+'px');clock.style.setProperty('--h',w*1.08+'px');clock.style.setProperty('--gap',w*.12+'px')}
+function face(pos,value,extra=''){return `<div class="half ${pos} ${extra}"><span>${value}</span></div>`}
+function content(oldValue,value){return face('top',value)+face('bottom',oldValue)+face('top',oldValue,'leaf-top')+face('bottom',value,'leaf-bottom')+'<i class="fold"></i><i class="hinge left"></i><i class="hinge right"></i>'}
+function rebuild(){timers.forEach(clearTimeout);timers=[];previous=[];clock.innerHTML='';cards=Array.from({length:options.seconds?3:2},()=>{const el=document.createElement('div');el.className='card';el.setAttribute('aria-hidden','true');clock.append(el);return el});const caption=document.createElement('div');caption.className='caption';clock.append(caption);dimensions();tick()}
+function tick(){const now=new Date(),hour=now.getHours(),values=[options.twelve?(hour%12||12):hour,now.getMinutes(),now.getSeconds()].map(v=>String(v).padStart(2,'0'));clock.setAttribute('aria-label',values.slice(0,cards.length).join(':'));cards.forEach((card,i)=>{if(previous[i]===values[i])return;clearTimeout(timers[i]);const old=previous[i]??values[i];card.classList.remove('flipping');card.innerHTML=content(old,values[i]);if(previous[i]!==undefined){void card.offsetWidth;card.classList.add('flipping');const value=values[i];timers[i]=setTimeout(()=>{card.classList.remove('flipping');card.innerHTML=content(value,value);card.querySelector('.leaf-bottom').style.transform='none';card.querySelector('.leaf-top').style.display='none'},580)}else{card.querySelector('.leaf-bottom').style.transform='none';card.querySelector('.leaf-top').style.display='none'}previous[i]=values[i]});document.querySelector('.caption').textContent=[options.twelve?(hour<12?'AM':'PM'):'',options.date?now.toLocaleDateString(): ''].filter(Boolean).join('   ')}
+for(const key of ['seconds','twelve','date']){const input=document.getElementById(key);input.checked=options[key];input.addEventListener('change',()=>{options[key]=input.checked;try{localStorage.setItem('classic-flip-options',JSON.stringify(options))}catch{}rebuild()})}
+document.getElementById('settings').onclick=()=>dialog.showModal();
+document.getElementById('fullscreen').onclick=async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else await document.documentElement.requestFullscreen()}catch{document.getElementById('fullscreen').textContent='浏览器不支持全屏'}};
+document.addEventListener('fullscreenchange',()=>document.getElementById('fullscreen').textContent=document.fullscreenElement?'退出全屏':'全屏');
+function reveal(){document.body.classList.add('controls');clearTimeout(hideTimer);hideTimer=setTimeout(()=>document.body.classList.remove('controls'),2600)}
+document.addEventListener('pointermove',reveal);document.addEventListener('keydown',reveal);document.addEventListener('visibilitychange',()=>{if(!document.hidden)tick()});window.addEventListener('resize',dimensions);rebuild();setInterval(tick,50);reveal();
+</script>
+</body></html>
